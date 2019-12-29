@@ -6,6 +6,7 @@
 macro_rules! stdin {
     () => {{
         use std::io::Read;
+        #[allow(unused_mut)]
         let mut s = String::new();
         std::io::stdin().read_to_string(&mut s).unwrap();
         s
@@ -21,6 +22,7 @@ macro_rules! input {
     ($($r:tt)*) => {
         let mut s = {
             use std::io::Read;
+            #[allow(unused_mut)]
             let mut s = String::new();
             std::io::stdin().read_to_string(&mut s).unwrap();
             s
@@ -35,7 +37,8 @@ macro_rules! input_inner {
     ($iter:expr, ) => {};
 
     ($iter:expr, $var:ident : $t:tt $($r:tt)*) => {
-        let $var = read_value!($iter, $t);
+        #[allow(unused_mut)]
+        let mut $var = read_value!($iter, $t);
         input_inner!{$iter $($r)*}
     };
 }
@@ -61,7 +64,49 @@ macro_rules! read_value {
         $iter.next().unwrap().parse::<$t>().expect("Parse error")
     };
 }
-
+/// yet another input macro from https://qiita.com/hatoo@github/items/fa14ad36a1b568d14f3e
+#[allow(unused_macros)]
+macro_rules! inputln {
+    ($t:ty) => {
+        {
+            let mut line: String = String::new();
+            std::io::stdin().read_line(&mut line).unwrap();
+            line.trim().parse::<$t>().unwrap()
+        }
+    };
+    ($($t:ty),*) => {
+        {
+            let mut line: String = String::new();
+            std::io::stdin().read_line(&mut line).unwrap();
+            let mut iter = line.split_whitespace();
+            (
+                $(iter.next().unwrap().parse::<$t>().unwrap(),)*
+            )
+        }
+    };
+    ($t:ty; $n:expr) => {
+        (0..$n).map(|_|
+            get!($t)
+        ).collect::<Vec<_>>()
+    };
+    ($($t:ty),*; $n:expr) => {
+        (0..$n).map(|_|
+            get!($($t),*)
+        ).collect::<Vec<_>>()
+    };
+    ($t:ty ;;) => {
+        {
+            let mut line: String = String::new();
+            std::io::stdin().read_line(&mut line).unwrap();
+            line.split_whitespace()
+                .map(|t| t.parse::<$t>().unwrap())
+                .collect::<Vec<_>>()
+        }
+    };
+    ($t:ty ;; $n:expr) => {
+        (0..$n).map(|_| get!($t ;;)).collect::<Vec<_>>()
+    };
+}
 /// test macro from https://techracho.bpsinc.jp/jhonda/2019_08_05/78537
 macro_rules! test {
     ($($input:expr => $output:expr),* $(,)*) => {
@@ -99,7 +144,7 @@ fn answer(input: &str)->String{
         source = input,
         n: usize,
     }
-    let mut result = n;
+    let result = n;
     return result.to_string();
 }
 
